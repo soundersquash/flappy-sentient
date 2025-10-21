@@ -23,6 +23,7 @@ body{
 }
 
 /* ---------- login ---------- */
+#login { top: 50%; left: 50%; transform: translate(-50%, -50%); }
 #login { position: absolute; z-index: 10; }
 #login h1 { font-size: 32px; margin-bottom: 20px; color: #333; letter-spacing: .5px; }
 #login input {
@@ -76,5 +77,6 @@ body{
   font-size: 16px;
   color: #444;
 }
+
 
 
