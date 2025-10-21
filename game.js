@@ -67,3 +67,4 @@ function gameOver(){
 
 
 function loop(){ update(); draw(); if(playing) requestAnimationFrame(loop); }
+
