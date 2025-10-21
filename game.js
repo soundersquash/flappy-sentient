@@ -1,198 +1,247 @@
 import { saveScore, subscribeLeaderboard } from "./firebase.js";
 
 const canvas = document.getElementById("game");
-const ctx    = canvas.getContext("2d");
+const ctx = canvas.getContext("2d");
 
-function resize(){
-  canvas.width  = document.getElementById("gameWrapper").clientWidth - 280 - 48;
-  canvas.height = window.innerHeight - 48;
-}
-window.addEventListener("resize", resize);
-resize();
+// Set canvas size
+canvas.width = 400;
+canvas.height = 600;
 
-const login   = document.getElementById("login");
-const startBtn= document.getElementById("startBtn");
-const userInp = document.getElementById("userName");
+const login = document.getElementById("login");
+const startBtn = document.getElementById("startBtn");
+const userNameInput = document.getElementById("userName");
 
 let userName = "", playing = false, best = 0;
 
-const birdImg = new Image(); birdImg.src = "sentient-removebg-preview.png";
-const pipeImg = new Image(); pipeImg.src = "unnamed-removebg-preview (1).png";
+// Load images
+const birdImg = new Image();
+birdImg.src = "sentient-removebg-preview.png";
 
-const PIPE_W   = 110;
-const PIPE_GAP = 240;
-const GRAVITY  = 0.45;
-const JUMP     = -8.5;
-const PIPE_SPD = 2.4;
-const PIPE_FREQUENCY = 180; // Increased from 120 to spawn less frequently
+const pipeImg = new Image();
+pipeImg.src = "unnamed-removebg-preview (1).png";
 
-let birdX = 90, birdY, vel, pipes=[], frame=0, score=0;
+// Game constants
+const BIRD_X = 80;
+const BIRD_WIDTH = 50;
+const BIRD_HEIGHT = 42;
+const GRAVITY = 0.45;
+const JUMP = -7.2;
+const PIPE_W = 100;
+const PIPE_GAP = 180;
+const PIPE_SPEED = 2.5;
+const PIPE_FREQUENCY = 100;
 
-subscribeLeaderboard(list=>{
-  document.getElementById("scoreList").innerHTML =
-     list.map((s,i)=>`<li>${s.name} — ${s.score}</li>`).join("");
+// Game state
+let birdY = 250;
+let vel = 0;
+let pipes = [];
+let frame = 0;
+let score = 0;
+
+// Subscribe to leaderboard
+subscribeLeaderboard(list => {
+  document.getElementById("scoreList").innerHTML = list
+    .map((s, i) => `<li>#${i + 1}: ${s.name} – ${s.score}</li>`)
+    .join("");
 });
 
-startBtn.onclick = ()=>{
-  if(userInp.value.trim().length<2){ alert("2+ letters"); return; }
-  userName = userInp.value.trim();
+// Start button
+startBtn.onclick = () => {
+  if (userNameInput.value.trim().length < 2) {
+    alert("Please enter at least 2 characters");
+    return;
+  }
+  userName = userNameInput.value.trim();
   login.style.display = "none";
-  reset(); playing = true; loop();
+  canvas.style.display = "block";
+  reset();
+  playing = true;
+  loop();
 };
 
-canvas.addEventListener("click", ()=> playing && (vel = JUMP));
-document.addEventListener("keydown", e=>{
-  if(e.code==="Space"){ e.preventDefault(); playing && (vel = JUMP); }
+// Controls
+canvas.addEventListener("click", () => {
+  if (playing) vel = JUMP;
 });
 
-function reset(){
-  birdY = canvas.height / 2;
-  vel   = 0;
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") {
+    e.preventDefault();
+    if (playing) vel = JUMP;
+  }
+});
+
+// Reset game
+function reset() {
+  birdY = 250;
+  vel = 0;
   score = 0;
   frame = 0;
-  // Start with one pipe that has pre-assigned random frame
-  pipes=[{
-    x: canvas.width, 
-    top: 120 + Math.random() * (canvas.height - PIPE_GAP - 240),
-    frameIdx: Math.floor(Math.random() * 4), // Random frame 0-3
-    scored: false
-  }];
+  pipes = [{ x: 400, top: 120, scored: false }];
 }
 
-function drawBird(){
-  ctx.drawImage(birdImg, birdX, birdY, 50, 42);
+// Draw bird
+function drawBird() {
+  if (birdImg.complete) {
+    ctx.drawImage(birdImg, BIRD_X, birdY, BIRD_WIDTH, BIRD_HEIGHT);
+  } else {
+    // Fallback
+    ctx.fillStyle = "#FFD700";
+    ctx.fillRect(BIRD_X, birdY, BIRD_WIDTH, BIRD_HEIGHT);
+  }
 }
 
-/*  ===  FIXED: proper obstacle rendering like Flappy Bird  ===  */
-function drawPipes(){
-  const COLS    = 4;
-  const FRAME_W = pipeImg.width / COLS;
-  const FRAME_H = pipeImg.height;
-
-  pipes.forEach((p) => {
-    const sx = p.frameIdx * FRAME_W;
-    
-    // Fixed size for obstacles (not random scaled)
-    const dogWidth = 80;  // Width of each dog obstacle
-    const dogHeight = (FRAME_H / FRAME_W) * dogWidth; // Maintain aspect ratio
-    
-    // Center the dog in the pipe area
-    const offsetX = (PIPE_W - dogWidth) / 2;
-
-    // TOP OBSTACLE - Fill from top to gap with repeating dogs
-    const topHeight = p.top;
-    const numDogsTop = Math.ceil(topHeight / dogHeight);
-    
-    for(let i = 0; i < numDogsTop; i++){
-      const yPos = i * dogHeight;
-      const remainingHeight = topHeight - yPos;
-      const drawHeight = Math.min(dogHeight, remainingHeight);
+// Draw pipes with tiling
+function drawPipes() {
+  pipes.forEach(p => {
+    if (pipeImg.complete) {
+      // Calculate image aspect ratio
+      const imgAspect = pipeImg.width / pipeImg.height;
+      const tileHeight = PIPE_W / imgAspect;
       
-      ctx.drawImage(
-        pipeImg, 
-        sx, 0, FRAME_W, (drawHeight / dogHeight) * FRAME_H,
-        p.x + offsetX, yPos, dogWidth, drawHeight
-      );
-    }
-
-    // BOTTOM OBSTACLE - Fill from gap to bottom with repeating dogs
-    const bottomStart = p.top + PIPE_GAP;
-    const bottomHeight = canvas.height - bottomStart;
-    const numDogsBottom = Math.ceil(bottomHeight / dogHeight);
-    
-    for(let i = 0; i < numDogsBottom; i++){
-      const yPos = bottomStart + (i * dogHeight);
-      const remainingHeight = canvas.height - yPos;
-      const drawHeight = Math.min(dogHeight, remainingHeight);
+      // Draw top pipe (tiled)
+      let currentY = 0;
+      while (currentY < p.top) {
+        const remainingHeight = p.top - currentY;
+        const drawHeight = Math.min(tileHeight, remainingHeight);
+        const srcHeight = (drawHeight / tileHeight) * pipeImg.height;
+        
+        ctx.drawImage(
+          pipeImg,
+          0, 0, pipeImg.width, srcHeight,
+          p.x, currentY, PIPE_W, drawHeight
+        );
+        currentY += tileHeight;
+      }
       
-      ctx.drawImage(
-        pipeImg, 
-        sx, 0, FRAME_W, (drawHeight / dogHeight) * FRAME_H,
-        p.x + offsetX, yPos, dogWidth, drawHeight
-      );
+      // Draw bottom pipe (tiled)
+      currentY = p.top + PIPE_GAP;
+      while (currentY < canvas.height) {
+        const remainingHeight = canvas.height - currentY;
+        const drawHeight = Math.min(tileHeight, remainingHeight);
+        const srcHeight = (drawHeight / tileHeight) * pipeImg.height;
+        
+        ctx.drawImage(
+          pipeImg,
+          0, 0, pipeImg.width, srcHeight,
+          p.x, currentY, PIPE_W, drawHeight
+        );
+        currentY += tileHeight;
+      }
+      
+      // Draw pipe caps for better look
+      ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+      ctx.fillRect(p.x - 5, p.top - 15, PIPE_W + 10, 15);
+      ctx.fillRect(p.x - 5, p.top + PIPE_GAP, PIPE_W + 10, 15);
+      
+    } else {
+      // Fallback green pipes
+      ctx.fillStyle = "#228B22";
+      ctx.fillRect(p.x, 0, PIPE_W, p.top);
+      ctx.fillRect(p.x, p.top + PIPE_GAP, PIPE_W, canvas.height - (p.top + PIPE_GAP));
+      
+      ctx.fillStyle = "#32CD32";
+      ctx.fillRect(p.x - 5, p.top - 20, PIPE_W + 10, 20);
+      ctx.fillRect(p.x - 5, p.top + PIPE_GAP, PIPE_W + 10, 20);
     }
-    
-    // Optional: Draw a cap/edge at the gap for better visibility
-    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-    ctx.fillRect(p.x, p.top - 5, PIPE_W, 5); // Top cap
-    ctx.fillRect(p.x, p.top + PIPE_GAP, PIPE_W, 5); // Bottom cap
   });
 }
 
-function update(){
-  if(!playing) return;
+// Update game
+function update() {
+  if (!playing) return;
+  
+  // Update bird
   vel += GRAVITY;
   birdY += vel;
   
-  // Spawn new pipe less frequently and with random properties
-  if(frame % PIPE_FREQUENCY === 0){
-    const minTop = 120;
-    const maxTop = canvas.height - PIPE_GAP - 120;
-    pipes.push({
-      x: canvas.width, 
-      top: minTop + Math.random() * (maxTop - minTop),
-      frameIdx: Math.floor(Math.random() * 4), // Random dog frame
-      scored: false
-    });
+  // Spawn new pipes
+  if (frame % PIPE_FREQUENCY === 0) {
+    const minTop = 80;
+    const maxTop = canvas.height - PIPE_GAP - 80;
+    const top = minTop + Math.random() * (maxTop - minTop);
+    pipes.push({ x: canvas.width, top: top, scored: false });
   }
   
   // Move pipes
-  pipes.forEach(p => p.x -= PIPE_SPD);
+  pipes.forEach(p => p.x -= PIPE_SPEED);
   
   // Remove off-screen pipes
   pipes = pipes.filter(p => p.x + PIPE_W > -50);
   
-  // Collision detection with actual visual size
-  for(let p of pipes){
-    const dogWidth = 80; // Must match the width in drawPipes
-    const offsetX = (PIPE_W - dogWidth) / 2;
-    const visualX = p.x + offsetX;
-    
-    // Check collision with actual visual bounds (with small margin for forgiveness)
+  // Check collisions and score
+  for (let p of pipes) {
+    // Collision detection with margin
     const margin = 5;
-    if(birdX + 50 - margin > visualX && birdX + margin < visualX + dogWidth){
-      if(birdY + margin < p.top || birdY + 42 - margin > p.top + PIPE_GAP){
+    if (p.x < BIRD_X + BIRD_WIDTH - margin && p.x + PIPE_W > BIRD_X + margin) {
+      if (birdY + margin < p.top || birdY + BIRD_HEIGHT - margin > p.top + PIPE_GAP) {
         gameOver();
         return;
       }
     }
     
-    // Score when passing the pipe
-    if(p.x + PIPE_W < birdX && !p.scored){
+    // Score when passing pipe
+    if (!p.scored && p.x + PIPE_W < BIRD_X) {
       score++;
       p.scored = true;
     }
   }
   
-  // Boundary check
-  if(birdY < 0 || birdY + 42 > canvas.height) gameOver();
+  // Check boundaries
+  if (birdY < 0 || birdY + BIRD_HEIGHT > canvas.height) {
+    gameOver();
+    return;
+  }
   
   frame++;
 }
 
-function draw(){
+// Draw game
+function draw() {
   // Sky background
   ctx.fillStyle = "#87CEEB";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
+  // Draw clouds
+  ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+  ctx.beginPath();
+  ctx.arc(100, 80, 30, 0, Math.PI * 2);
+  ctx.arc(130, 75, 35, 0, Math.PI * 2);
+  ctx.arc(165, 80, 30, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(300, 120, 25, 0, Math.PI * 2);
+  ctx.arc(325, 115, 30, 0, Math.PI * 2);
+  ctx.arc(355, 120, 25, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Draw game objects
   drawBird();
   drawPipes();
   
-  // Score display
-  ctx.fillStyle = "#fff";
+  // Draw score
+  ctx.fillStyle = "#FFF";
   ctx.strokeStyle = "#000";
   ctx.lineWidth = 3;
   ctx.font = "bold 36px Arial";
-  ctx.strokeText(score, 25, 45);
-  ctx.fillText(score, 25, 45);
+  ctx.strokeText(score, 20, 50);
+  ctx.fillText(score, 20, 50);
 }
 
-function gameOver(){
+// Game over
+function gameOver() {
   playing = false;
-  if(score > best) best = score;
+  
+  if (score > best) {
+    best = score;
+  }
+  
+  // Save score to Firebase
   saveScore(userName, score);
-  setTimeout(()=>{
-    if(confirm(`Score: ${score}\nBest: ${best}\nPlay again?`)){
+  
+  setTimeout(() => {
+    if (confirm(`Game Over!\nScore: ${score}\nBest: ${best}\n\nPlay again?`)) {
       reset();
       playing = true;
       loop();
@@ -202,8 +251,11 @@ function gameOver(){
   }, 100);
 }
 
-function loop(){
+// Game loop
+function loop() {
   update();
   draw();
-  if(playing) requestAnimationFrame(loop);
+  if (playing) {
+    requestAnimationFrame(loop);
+  }
 }
