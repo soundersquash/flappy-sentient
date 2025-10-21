@@ -3,21 +3,24 @@
 html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
 
 /* ---------- gradient background ---------- */
-body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* ---------- card ---------- */
-.card {
-  background: rgba(255, 255, 255, .95);
-  border-radius: 16px;
-  padding: 32px 40px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, .25);
-  text-align: center;
-  backdrop-filter: blur(10px);
+/*  replace ONLY the background line  */
+body{
+  background: #4facfe; /* fallback */
+  background-image: url('data:image/svg+xml;utf8,\
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">\
+      <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">\
+        <stop offset="0%" stop-color="%2387CEEB"/>\
+        <stop offset="100%" stop-color="%234facfe"/>\
+      </linearGradient>\
+      <rect width="1200" height="800" fill="url(%23g)"/>\
+      <circle cx="200" cy="150" r="90" fill="white" opacity="0.6"/>\
+      <circle cx="350" cy="100" r="70" fill="white" opacity="0.5"/>\
+      <circle cx="900" cy="180" r="100" fill="white" opacity="0.55"/>\
+      <circle cx="1050" cy="120" r="75" fill="white" opacity="0.5"/>\
+    </svg>');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* ---------- login ---------- */
@@ -74,3 +77,4 @@ body {
   font-size: 16px;
   color: #444;
 }
+
