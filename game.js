@@ -59,13 +59,21 @@ function drawBird(){
 /*  ===  NEW: unstretched dog  ===  */
 function drawPipes(){
   pipes.forEach(p=>{
-    const dogNaturalW = 395;  // <-- put real PNG width here
-    const dogNaturalH = 455;  // <-- put real PNG height here
-    const scale = Math.min(PIPE_W / dogNaturalW, 1);
-    const drawW = dogNaturalW * scale;
-    const drawH = dogNaturalH * scale;
+    /*  1.  natural size of your PNG  */
+    const dogNaturalW = 395;   // <-- change if you know the real width
+    const dogNaturalH = 455;   // <-- change if you know the real height
+
+    /*  2.  choose how big the dog should appear (1.0 = original, 0.7 = smaller, 1.4 = bigger)  */
+    const SCALE_FACTOR = 1.2;     //  tweak this number only
+
+    /*  3.  final draw size  */
+    const drawW = dogNaturalW * SCALE_FACTOR;
+    const drawH = dogNaturalH * SCALE_FACTOR;
+
+    /*  4.  centre horizontally inside the pipe column  */
     const offsetX = (PIPE_W - drawW) / 2;
 
+    /*  5.  draw one dog at the top & one at the bottom  */
     ctx.drawImage(pipeImg, p.x + offsetX, p.top - drawH, drawW, drawH);
     ctx.drawImage(pipeImg, p.x + offsetX, p.top + PIPE_GAP, drawW, drawH);
   });
@@ -109,3 +117,4 @@ function gameOver(){
 function loop(){
   update(); draw(); if(playing) requestAnimationFrame(loop);
 }
+
