@@ -17,7 +17,7 @@ let pipes = [], frame = 0, score = 0;
 
 subscribeLeaderboard(list=>{
   document.getElementById("scoreList").innerHTML =
-     list.map((s,i=>`<li>${s.name} – ${s.score}</li>`).join("");
+     list.map((s,i)=>`<li>${s.name} – ${s.score}</li>`).join("");
 });
 
 startBtn.onclick = ()=>{
@@ -64,5 +64,6 @@ function gameOver(){
   saveScore(userName, score);
   setTimeout(()=>{ if(confirm(`Score: ${score}\nAgain?`)){ reset(); playing=true; loop(); }else location.reload(); },100);
 }
+
 
 function loop(){ update(); draw(); if(playing) requestAnimationFrame(loop); }
