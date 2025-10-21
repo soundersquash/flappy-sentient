@@ -58,24 +58,34 @@ function drawBird(){
 
 /*  ===  NEW: unstretched dog  ===  */
 function drawPipes(){
-  pipes.forEach(p=>{
-    /*  1.  natural size of your PNG  */
-    const dogNaturalW = 395;   // <-- change if you know the real width
-    const dogNaturalH = 455;   // <-- change if you know the real height
+  /*  ----  sprite sheet data  ----  */
+  const COLS       = 4;                 // 4 dogs in a row inside the PNG
+  const FRAME_W    = pipeImg.width / COLS;
+  const FRAME_H    = pipeImg.height;    // 1 row high
 
-    /*  2.  choose how big the dog should appear (1.0 = original, 0.7 = smaller, 1.4 = bigger)  */
-    const SCALE_FACTOR = 1.2;     //  tweak this number only
+  pipes.forEach((p, idx) => {
+    /*  ----  random scale  ----  */
+    const MIN_SCALE = 0.35;
+    const MAX_SCALE = 0.65;
+    const scale     = MIN_SCALE + Math.random() * (MAX_SCALE - MIN_SCALE);
 
-    /*  3.  final draw size  */
-    const drawW = dogNaturalW * SCALE_FACTOR;
-    const drawH = dogNaturalH * SCALE_FACTOR;
+    /*  ----  random frame (0-3)  ----  */
+    const frameIdx  = Math.floor(Math.random() * COLS);
+    const sx        = frameIdx * FRAME_W;   // cut start x
 
-    /*  4.  centre horizontally inside the pipe column  */
+    /*  ----  final draw size  ----  */
+    const drawW = FRAME_W * scale;
+    const drawH = FRAME_H * scale;
+
+    /*  ----  centre horizontally  ----  */
     const offsetX = (PIPE_W - drawW) / 2;
 
-    /*  5.  draw one dog at the top & one at the bottom  */
-    ctx.drawImage(pipeImg, p.x + offsetX, p.top - drawH, drawW, drawH);
-    ctx.drawImage(pipeImg, p.x + offsetX, p.top + PIPE_GAP, drawW, drawH);
+    /*  ----  draw top & bottom dog  ----  */
+    ctx.drawImage(pipeImg, sx, 0, FRAME_W, FRAME_H,
+                         p.x + offsetX, p.top - drawH, drawW, drawH);
+
+    ctx.drawImage(pipeImg, sx, 0, FRAME_W, FRAME_H,
+                         p.x + offsetX, p.top + PIPE_GAP, drawW, drawH);
   });
 }
 
@@ -117,4 +127,5 @@ function gameOver(){
 function loop(){
   update(); draw(); if(playing) requestAnimationFrame(loop);
 }
+
 
