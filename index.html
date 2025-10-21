@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Flappy Sentient</title>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    window.fbApp = initializeApp({
+      apiKey: "AIzaSyD_I5gSgl_wu2CvaBGXzFn0k34qIJuXD8c",
+      authDomain: "sentient-2dade.firebaseapp.com",
+      projectId: "sentient-2dade"
+    });
+    window.db = getFirestore(window.fbApp);
+  </script>
+</head>
+<body>
+  <div id="login">
+    <h1>Flappy Sentient</h1>
+    <input id="userName" placeholder="Your name" maxlength="12">
+    <button id="startBtn">START</button>
+  </div>
+  <canvas id="game" width="400" height="600"></canvas>
+  <div id="leaderboard">
+    <h3>Top 10</h3>
+    <ol id="scoreList"></ol>
+  </div>
+
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="game.js"></script>
+</body>
+</html>

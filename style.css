@@ -1,0 +1,4 @@
+body{margin:0;background:#111;color:#fff;font-family:Arial;display:flex;flex-direction:center;align-items:center;text-align:center}
+#login{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+canvas{display:none;border:2px solid #555}
+#leaderboard{margin-top:10px;width:400px}
