@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
   <title>Flappy Sentient</title>
   <link rel="stylesheet" href="style.css"/>
   <!-- Firebase -->
@@ -9,28 +10,29 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     window.fbApp = initializeApp({
-      apiKey: "AIzaSyD_I5gSgl_wu2CvaBGXzFn0k34qIJuXD8c",
-      authDomain: "sentient-2dade.firebaseapp.com",
-      projectId: "sentient-2dade"
+      apiKey: "YOUR-KEY",
+      authDomain: "YOUR-PROJECT.firebaseapp.com",
+      projectId: "YOUR-PROJECT"
     });
     window.db = getFirestore(window.fbApp);
   </script>
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 </head>
 <body>
   <div id="login">
     <h1>Flappy Sentient</h1>
-    <input id="userName" placeholder="Your name" maxlength="12">
+    <input id="userName" placeholder="Your name" maxlength="12"/>
     <button id="startBtn">START</button>
   </div>
-  <canvas id="game" width="400" height="600"></canvas>
-  <div id="leaderboard">
-    <h3>Top 10</h3>
-    <ol id="scoreList"></ol>
+
+  <div id="gameWrapper">
+    <canvas id="game"></canvas>
+    <aside id="leaderboard">
+      <h3>Top 10</h3>
+      <ol id="scoreList"></ol>
+    </aside>
   </div>
 
   <script type="module" src="firebase.js"></script>
   <script type="module" src="game.js"></script>
 </body>
-
 </html>
