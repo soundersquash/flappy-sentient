@@ -50,12 +50,12 @@ function reset(){
   vel   = 0;
   score = 0;
   frame = 0;
-  // Start with one pipe that has pre-assigned random properties
+  // Start with one pipe that has pre-assigned random frame
   pipes=[{
     x: canvas.width, 
     top: 120 + Math.random() * (canvas.height - PIPE_GAP - 240),
-    scale: 0.45 + Math.random() * 0.15, // Random scale between 0.45-0.6
-    frameIdx: Math.floor(Math.random() * 4) // Random frame 0-3
+    frameIdx: Math.floor(Math.random() * 4), // Random frame 0-3
+    scored: false
   }];
 }
 
@@ -63,30 +63,59 @@ function drawBird(){
   ctx.drawImage(birdImg, birdX, birdY, 50, 42);
 }
 
-/*  ===  FIXED: consistent dog rendering  ===  */
+/*  ===  FIXED: proper obstacle rendering like Flappy Bird  ===  */
 function drawPipes(){
   const COLS    = 4;
   const FRAME_W = pipeImg.width / COLS;
   const FRAME_H = pipeImg.height;
 
   pipes.forEach((p) => {
-    // Use the pipe's stored scale and frameIdx (set once when created)
-    const sx    = p.frameIdx * FRAME_W;
-    const drawW = FRAME_W * p.scale;
-    const drawH = FRAME_H * p.scale;
-    const offsetX = (PIPE_W - drawW) / 2;
+    const sx = p.frameIdx * FRAME_W;
+    
+    // Fixed size for obstacles (not random scaled)
+    const dogWidth = 80;  // Width of each dog obstacle
+    const dogHeight = (FRAME_H / FRAME_W) * dogWidth; // Maintain aspect ratio
+    
+    // Center the dog in the pipe area
+    const offsetX = (PIPE_W - dogWidth) / 2;
 
-    // Draw top dog (upside down or normal - your choice)
-    ctx.save();
-    ctx.translate(p.x + PIPE_W/2, p.top);
-    ctx.scale(1, -1); // Flip vertically for top obstacle
-    ctx.drawImage(pipeImg, sx, 0, FRAME_W, FRAME_H,
-                  -drawW/2, 0, drawW, drawH);
-    ctx.restore();
+    // TOP OBSTACLE - Fill from top to gap with repeating dogs
+    const topHeight = p.top;
+    const numDogsTop = Math.ceil(topHeight / dogHeight);
+    
+    for(let i = 0; i < numDogsTop; i++){
+      const yPos = i * dogHeight;
+      const remainingHeight = topHeight - yPos;
+      const drawHeight = Math.min(dogHeight, remainingHeight);
+      
+      ctx.drawImage(
+        pipeImg, 
+        sx, 0, FRAME_W, (drawHeight / dogHeight) * FRAME_H,
+        p.x + offsetX, yPos, dogWidth, drawHeight
+      );
+    }
 
-    // Draw bottom dog
-    ctx.drawImage(pipeImg, sx, 0, FRAME_W, FRAME_H,
-                  p.x + offsetX, p.top + PIPE_GAP, drawW, drawH);
+    // BOTTOM OBSTACLE - Fill from gap to bottom with repeating dogs
+    const bottomStart = p.top + PIPE_GAP;
+    const bottomHeight = canvas.height - bottomStart;
+    const numDogsBottom = Math.ceil(bottomHeight / dogHeight);
+    
+    for(let i = 0; i < numDogsBottom; i++){
+      const yPos = bottomStart + (i * dogHeight);
+      const remainingHeight = canvas.height - yPos;
+      const drawHeight = Math.min(dogHeight, remainingHeight);
+      
+      ctx.drawImage(
+        pipeImg, 
+        sx, 0, FRAME_W, (drawHeight / dogHeight) * FRAME_H,
+        p.x + offsetX, yPos, dogWidth, drawHeight
+      );
+    }
+    
+    // Optional: Draw a cap/edge at the gap for better visibility
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.fillRect(p.x, p.top - 5, PIPE_W, 5); // Top cap
+    ctx.fillRect(p.x, p.top + PIPE_GAP, PIPE_W, 5); // Bottom cap
   });
 }
 
@@ -102,7 +131,6 @@ function update(){
     pipes.push({
       x: canvas.width, 
       top: minTop + Math.random() * (maxTop - minTop),
-      scale: 0.45 + Math.random() * 0.15, // Random scale 0.45-0.6
       frameIdx: Math.floor(Math.random() * 4), // Random dog frame
       scored: false
     });
@@ -116,19 +144,14 @@ function update(){
   
   // Collision detection with actual visual size
   for(let p of pipes){
-    const FRAME_W = pipeImg.width / 4;
-    const FRAME_H = pipeImg.height;
-    const drawW = FRAME_W * p.scale;
-    const drawH = FRAME_H * p.scale;
-    const offsetX = (PIPE_W - drawW) / 2;
-    
-    // Actual x position and width of the visual dog
+    const dogWidth = 80; // Must match the width in drawPipes
+    const offsetX = (PIPE_W - dogWidth) / 2;
     const visualX = p.x + offsetX;
-    const visualW = drawW;
     
-    // Check collision with actual visual bounds
-    if(birdX + 50 > visualX && birdX < visualX + visualW){
-      if(birdY < p.top || birdY + 42 > p.top + PIPE_GAP){
+    // Check collision with actual visual bounds (with small margin for forgiveness)
+    const margin = 5;
+    if(birdX + 50 - margin > visualX && birdX + margin < visualX + dogWidth){
+      if(birdY + margin < p.top || birdY + 42 - margin > p.top + PIPE_GAP){
         gameOver();
         return;
       }
