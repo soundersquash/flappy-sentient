@@ -77,7 +77,6 @@ function drawPipes(){
     /*  bottom pipe (dog standing on bottom)  */
     ctx.drawImage(pipeImg, p.x + offsetX, p.top + PIPE_GAP, drawW, drawH);
   });
-
 }
 
 function update(){
@@ -125,6 +124,7 @@ function gameOver(){
 function loop(){
   update(); draw(); if(playing) requestAnimationFrame(loop);
 }
+
 
 
 
