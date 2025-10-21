@@ -57,17 +57,27 @@ function reset(){
   pipes=[{x:canvas.width, top:120+Math.random()*(canvas.height-PIPE_GAP-240)}];
 }
 
-function drawBird(){
-  ctx.drawImage(birdImg, birdX, birdY, 50, 42);
-}
-
 function drawPipes(){
   pipes.forEach(p=>{
-    /* top pipe */
-    ctx.drawImage(pipeImg, p.x, 0, PIPE_W, p.top);
-    /* bottom pipe - full height remaining */
-    ctx.drawImage(pipeImg, p.x, p.top+PIPE_GAP, PIPE_W, canvas.height);
+    /*  original dog picture size  */
+    const dogNaturalW = 300;   // CHANGE to real pixel width of your PNG
+    const dogNaturalH = 400;   // CHANGE to real pixel height
+
+    /*  scale to fit pipe width while keeping aspect  */
+    const scale = Math.min(PIPE_W / dogNaturalW, 1);
+    const drawW = dogNaturalW * scale;
+    const drawH = dogNaturalH * scale;
+
+    /*  centre horizontally inside the pipe column  */
+    const offsetX = (PIPE_W - drawW) / 2;
+
+    /*  top pipe (dog hanging from top)  */
+    ctx.drawImage(pipeImg, p.x + offsetX, p.top - drawH, drawW, drawH);
+
+    /*  bottom pipe (dog standing on bottom)  */
+    ctx.drawImage(pipeImg, p.x + offsetX, p.top + PIPE_GAP, drawW, drawH);
   });
+
 }
 
 function update(){
@@ -115,4 +125,5 @@ function gameOver(){
 function loop(){
   update(); draw(); if(playing) requestAnimationFrame(loop);
 }
+
 
