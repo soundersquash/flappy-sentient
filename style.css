@@ -1,43 +1,44 @@
-* { box-sizing: border-box; margin: 0; }
-html, body { height: 100%; }
-body {
-  background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: Arial, Helvetica, sans-serif;
+*  { box-sizing: border-box; margin: 0; padding: 0; }
+html,body{ height:100%; overflow:hidden; font-family:Arial,Helvetica,sans-serif; }
+body{
+  background:linear-gradient(to bottom, #87CEEB 0%, #98D8E8 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
-#login {
-  text-align: center;
-  background: rgba(255,255,255,.9);
-  padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+/* ---------- login box ---------- */
+#login{
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(255,255,255,.95);
+  padding:30px 40px;
+  border-radius:12px;
+  box-shadow:0 4px 25px rgba(0,0,0,.3);
+  text-align:center;
+  z-index:10;
 }
-#login h1 { margin-bottom: 15px; }
-#login input {
-  padding: 10px 14px;
-  font-size: 18px;
-  width: 160px;
+#login h1{ margin-bottom:15px; }
+#login input{ padding:10px 14px; font-size:18px; width:160px; }
+#login button{ padding:10px 20px; font-size:18px; margin-left:8px; cursor:pointer; }
+
+/* ---------- full-screen wrapper ---------- */
+#gameWrapper{
+  width:100vw; height:100vh;
+  display:flex;
 }
-#login button {
-  padding: 10px 20px;
-  font-size: 18px;
-  margin-left: 8px;
-  cursor: pointer;
+#game{
+  flex:1 1 auto;          /* take all leftover space */
+  display:block;
+  background:transparent;
 }
-canvas {
-  display: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 25px rgba(0,0,0,.35);
+#leaderboard{
+  flex:0 0 260px;         /* fixed 260px right panel */
+  background:rgba(255,255,255,.92);
+  padding:20px;
+  overflow-y:auto;
+  box-shadow:-2px 0 8px rgba(0,0,0,.15);
 }
-#leaderboard {
-  position: absolute;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,255,255,.85);
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-}
+#leaderboard h3{ margin-bottom:10px; }
+#leaderboard ol{ padding-left:20px; }
+#leaderboard li{ margin:4px 0; font-size:15px; }
