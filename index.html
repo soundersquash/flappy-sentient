@@ -18,21 +18,21 @@
   </script>
 </head>
 <body>
-  <div id="login">
+  <div id="login" class="card">
     <h1>Flappy Sentient</h1>
-    <input id="userName" placeholder="Your name" maxlength="12"/>
+    <input id="userName" placeholder="Enter your name" maxlength="12"/>
     <button id="startBtn">START</button>
   </div>
 
   <div id="gameWrapper">
     <canvas id="game"></canvas>
-    <aside id="leaderboard">
-      <h3>Top 10</h3>
+    <aside id="leaderboard" class="card">
+      <h3>Leaderboard</h3>
       <ol id="scoreList"></ol>
     </aside>
   </div>
 
-  <script type="module" src="firebase.js"></script>
-  <script type="module" src="game.js"></script>
+  <script type="module" src="firebase.js?v=2"></script>
+  <script type="module" src="game.js?v=2"></script>
 </body>
 </html>
