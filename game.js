@@ -60,8 +60,8 @@ function reset(){
 function drawPipes(){
   pipes.forEach(p=>{
     /*  original dog picture size  */
-    const dogNaturalW = 300;   // CHANGE to real pixel width of your PNG
-    const dogNaturalH = 400;   // CHANGE to real pixel height
+    const dogNaturalW = 395;   // CHANGE to real pixel width of your PNG
+    const dogNaturalH = 455;   // CHANGE to real pixel height
 
     /*  scale to fit pipe width while keeping aspect  */
     const scale = Math.min(PIPE_W / dogNaturalW, 1);
@@ -125,5 +125,6 @@ function gameOver(){
 function loop(){
   update(); draw(); if(playing) requestAnimationFrame(loop);
 }
+
 
 
