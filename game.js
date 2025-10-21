@@ -4,8 +4,9 @@ const canvas = document.getElementById("game");
 const ctx    = canvas.getContext("2d");
 
 function resize(){
-  canvas.width  = window.innerWidth - 260;   /* leave 260px for panel */
-  canvas.height = window.innerHeight;
+  /* canvas fills the left flex item minus the wrapper padding (24px each side) */
+  canvas.width  = document.getElementById("gameWrapper").clientWidth - 280 - 24 - 24;
+  canvas.height = window.innerHeight - 48;   /* 24px top + 24px bottom padding */
 }
 window.addEventListener("resize", resize);
 resize();
@@ -114,3 +115,4 @@ function gameOver(){
 function loop(){
   update(); draw(); if(playing) requestAnimationFrame(loop);
 }
+
